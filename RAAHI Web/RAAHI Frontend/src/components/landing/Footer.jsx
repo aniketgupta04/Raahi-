@@ -5,7 +5,7 @@ const Footer = ({ links }) => {
         <div>
           <div className="font-headline text-lg font-bold uppercase tracking-[0.16em] text-primary">RAAHI</div>
           <p className="mt-2 max-w-md text-sm tracking-wide text-on-surface-variant">
-            © 2024 Digital Authority Safety System. All rights reserved. Official government resource.
+            Copyright 2024 Raahi Safety System. All rights reserved.
           </p>
         </div>
         <nav className="flex flex-wrap gap-6 md:gap-10">

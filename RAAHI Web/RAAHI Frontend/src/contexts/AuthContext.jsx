@@ -166,14 +166,6 @@ export const AuthProvider = ({ children }) => {
       if (response.success) {
         console.log('✅ Registration successful');
         
-        // Auto-login after successful registration
-        if (response.token) {
-          localStorage.setItem('authToken', response.token);
-          localStorage.setItem('user', JSON.stringify(response.user));
-          setUser(response.user);
-          setIsAuthenticated(true);
-        }
-        
         return { 
           success: true, 
           user: response.user, 

@@ -1,259 +1,193 @@
-# RAAHI Web Application - Backend & Frontend Integration
+# RAAHI Web
 
-This project consists of a React frontend and Node.js/Express backend for the RAAHI tourist safety application.
+RAAHI is a tourist safety platform with a Node.js/Express backend and a React + Vite frontend. The current codebase includes authentication flows, emergency and AI routes, map integrations, Firebase support, and a restructured landing/login experience.
 
-## Project Structure
+## Structure
 
-```
+```text
 RAAHI Web/
-├── RAAHI Backend/          # Node.js/Express API server
-│   ├── controllers/        # API controllers
-│   ├── models/            # Database models
-│   ├── routes/            # API routes
-│   ├── middleware/        # Custom middleware
-│   ├── config/           # Configuration files
-│   └── server.js         # Main server file
-│
-└── RAAHI Frontend/        # React application
+├── RAAHI Backend/
+│   ├── config/              # env, MongoDB, Firebase, API key loaders
+│   ├── controllers/         # backend controllers
+│   ├── middleware/          # auth, validation, security helpers
+│   ├── models/              # Mongoose models
+│   ├── routes/              # auth, AI, emergency, geofences, users
+│   ├── scripts/             # db, maintenance, examples, tests
+│   └── server.js            # backend entry point
+└── RAAHI Frontend/
     ├── src/
-    │   ├── components/    # React components
-    │   ├── contexts/      # React contexts (Auth)
-    │   ├── services/      # API services
-    │   ├── utils/         # Utility functions
-    │   └── main.jsx       # Main React entry point
-    ├── public/           # Static files
-    └── vite.config.js    # Vite configuration
+    │   ├── components/      # app UI and shared components
+    │   ├── components/landing/
+    │   ├── contexts/        # auth and Google Maps context
+    │   ├── data/            # landing page content
+    │   ├── layouts/         # route-level layout wrappers
+    │   ├── pages/           # landing, login, dashboard placeholders
+    │   ├── services/        # axios API layer and AI helpers
+    │   └── main.jsx         # frontend entry point
+    └── vite.config.js       # Vite + Tailwind + client key loading
 ```
 
-## Backend Features
+## Current Frontend Flow
 
-- **Authentication**: JWT-based authentication with registration and login
-- **User Management**: User profiles, preferences, and security
-- **Safety Features**: Emergency alerts, panic button, location services
-- **AI Integration**: Chatbot and safety recommendations
-- **Database**: MongoDB with Mongoose ODM
-- **Security**: Helmet, CORS, rate limiting, input validation
+- `/` shows the landing page built from reusable React components
+- `Access System` goes to `/login`
+- `Emergency Access` currently goes to `/dashboard`
+- `Learn How It Works` scrolls to the workflow section
+- `/login` is a focused portal-style login screen
+- `/dashboard` is currently a placeholder route for the next dashboard build-out
 
-## Frontend Features
+## Key Features
 
-- **React 19**: Modern React with hooks and context
-- **Authentication**: JWT token management with context
-- **Responsive Design**: Mobile-first responsive design
-- **Real-time Features**: Panic button, chatbot integration
-- **State Management**: React Context for global state
-- **HTTP Client**: Axios with interceptors and error handling
+- React 19 frontend with Vite and Tailwind CSS
+- Express backend with MongoDB and Mongoose
+- JWT-based authentication endpoints
+- Firebase client config on the frontend
+- Firebase Admin setup on the backend
+- Google Maps integration through a shared React context
+- Gemini AI backend service with fallback responses when not configured
+- OpenWeather usage in the frontend home/weather experience
+- Panic/emergency flows and geofence-related backend routes
 
-## Setup Instructions
+## API Key Setup
 
-### Prerequisites
+Real keys are no longer meant to live in source files or committed templates.
 
-- Node.js (v16 or higher)
-- MongoDB (local or cloud)
-- npm or yarn package manager
+The project now uses file-based key loading with paths stored in `.env`.
 
-### Backend Setup
+### Shared external key folder
 
-1. **Navigate to backend directory:**
-   ```bash
-   cd "RAAHI Backend"
-   ```
+```text
+D:\MY FILES\Raahi\API Keys
+```
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+### Backend `.env`
 
-3. **Environment Configuration:**
-   Create a `.env` file in the backend directory:
-   ```env
-   # Server Configuration
-   NODE_ENV=development
-   PORT=3000
+File: `RAAHI Backend/.env`
 
-   # Database
-   MONGODB_URI=mongodb://localhost:27017/raahi-db
-   
-   # JWT Configuration
-   JWT_SECRET=your-super-secret-jwt-key-here
-   JWT_EXPIRE=7d
-   
-   # Rate Limiting
-   RATE_LIMIT_WINDOW_MS=900000
-   RATE_LIMIT_MAX_REQUESTS=100
-   
-   # Firebase (optional)
-   FIREBASE_PROJECT_ID=your-firebase-project-id
-   FIREBASE_PRIVATE_KEY=your-firebase-private-key
-   FIREBASE_CLIENT_EMAIL=your-firebase-client-email
-   ```
+```env
+API_KEYS_FILE_PATH=D:\MY FILES\Raahi\API Keys\service-keys.json
+FIREBASE_SERVICE_ACCOUNT_PATH=D:\MY FILES\Raahi\API Keys\raahi-adf39-firebase-adminsdk-fbsvc-89a7250842.json
+```
 
-4. **Start the backend server:**
-   ```bash
-   npm run dev
-   ```
-   
-   The backend will start on `http://localhost:3000`
+### Frontend `.env`
 
-### Frontend Setup
+File: `RAAHI Frontend/.env`
 
-1. **Navigate to frontend directory:**
-   ```bash
-   cd "RAAHI Frontend"
-   ```
+```env
+VITE_API_KEYS_FILE_PATH=D:\MY FILES\Raahi\API Keys\client-keys.json
+```
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+### Expected key files
 
-3. **Environment Configuration:**
-   The `.env` file is already created with default values:
-   ```env
-   VITE_API_BASE_URL=http://localhost:3000/api
-   NODE_ENV=development
-   VITE_APP_NAME=RAAHI - Tourist Safety App
-   VITE_APP_VERSION=1.0.0
-   ```
+`service-keys.json`
 
-4. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
-   
-   The frontend will start on `http://localhost:5173`
+```json
+{
+  "geminiApiKey": "your_gemini_api_key_here"
+}
+```
 
-## API Integration Features
+`client-keys.json`
 
-### Authentication System
-- **Login**: Multi-user type login (Tourist/Police/Department)
-- **Registration**: Complete tourist registration with KYC
-- **Token Management**: Automatic token refresh and logout
-- **Protected Routes**: Auth context protecting sensitive pages
+```json
+{
+  "firebase": {
+    "apiKey": "your_firebase_api_key",
+    "authDomain": "your_project.firebaseapp.com",
+    "databaseURL": "https://your_project-default-rtdb.firebaseio.com",
+    "projectId": "your_project_id",
+    "storageBucket": "your_project.firebasestorage.app",
+    "messagingSenderId": "your_sender_id",
+    "appId": "your_app_id"
+  },
+  "googleMapsApiKey": "your_google_maps_api_key_here",
+  "geminiApiKey": "your_gemini_api_key_here",
+  "openWeatherApiKey": "your_openweather_api_key_here"
+}
+```
 
-### API Services
-- **Centralized API Client**: Single axios instance with interceptors
-- **Error Handling**: User-friendly error messages and retry logic
-- **Loading States**: Loading indicators for all API operations
-- **Auto-retry**: Automatic retry for failed network requests
+Notes:
 
-### Real-time Features
-- **Panic Button**: Location-based emergency alerts to backend
-- **Chatbot**: AI-powered assistance through backend API
-- **Safety Alerts**: Real-time safety notifications
-- **Location Services**: GPS integration for safety features
+- The external `D:` folder is outside the repo, so real keys are not pushed to GitHub
+- Backend Firebase uses the service-account JSON file path
+- Frontend Firebase, Maps, Gemini fallback, and OpenWeather are loaded through the client key JSON during Vite startup
 
-## Testing the Integration
+## Environment Setup
 
-### 1. Start Both Servers
+### Backend
 
-**Terminal 1 - Backend:**
+Required core values in `RAAHI Backend/.env`:
+
+```env
+PORT=3000
+NODE_ENV=development
+MONGODB_URI=your_mongodb_uri
+JWT_SECRET=your_jwt_secret
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+```
+
+### Frontend
+
+Required core values in `RAAHI Frontend/.env`:
+
+```env
+VITE_API_BASE_URL=http://localhost:3000/api
+VITE_API_KEYS_FILE_PATH=D:\MY FILES\Raahi\API Keys\client-keys.json
+VITE_APP_NAME=RAAHI - Tourist Safety App
+VITE_APP_VERSION=1.0.0
+```
+
+## Running Locally
+
+### Backend
+
 ```bash
-cd "RAAHI Backend"
+cd "RAAHI Web/RAAHI Backend"
+npm install
 npm run dev
 ```
 
-**Terminal 2 - Frontend:**
+Backend runs on `http://localhost:3000`.
+
+### Frontend
+
 ```bash
-cd "RAAHI Frontend"
+cd "RAAHI Web/RAAHI Frontend"
+npm install
 npm run dev
 ```
 
-### 2. Test Authentication Flow
+Frontend runs on `http://localhost:5173`.
 
-1. **Registration**:
-   - Navigate to `http://localhost:5173`
-   - Click on Registration
-   - Fill out the multi-step registration form
-   - Submit and verify account creation
+## Main Backend Route Groups
 
-2. **Login**:
-   - Navigate to `http://localhost:5173/login.html`
-   - Test different user types (Tourist/Police/Department)
-   - Verify token storage and redirect to dashboard
+- `/api/auth`
+- `/api/users`
+- `/api/destinations`
+- `/api/ai`
+- `/api/emergency`
+- `/api/geofences`
 
-3. **Dashboard**:
-   - After login, verify dashboard loads user data
-   - Test logout functionality
+## Important Project Updates
 
-### 3. Test Interactive Features
+- MongoDB config was centralized so the URI is managed from backend config instead of scattered scripts
+- Firebase backend now supports service-account JSON file loading
+- Frontend landing page was rebuilt into reusable routed components
+- Login page was rebuilt as a focused portal route
+- API keys were moved out of source code into external file-based configuration
+- In-repo API key template folders were removed to avoid accidental GitHub exposure
 
-1. **Panic Button**: Click to test emergency API call
-2. **Chatbot**: Open and test AI responses
-3. **Navigation**: Test all page transitions
-4. **Error Handling**: Test with backend offline
+## Current Limitations
 
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `GET /api/auth/me` - Get current user
-- `POST /api/auth/logout` - User logout
-
-### Users
-- `GET /api/users/profile` - Get user profile
-- `PUT /api/users/profile` - Update user profile
-
-### Emergency
-- `POST /api/emergency/panic` - Trigger panic alert
-- `GET /api/emergency/contacts` - Get emergency contacts
-
-### AI Services
-- `POST /api/ai/chatbot` - Chatbot responses
-- `POST /api/ai/safety-recommendations` - Safety recommendations
-
-### Alerts
-- `GET /api/alerts` - Get safety alerts
-- `POST /api/alerts` - Create safety alert
-
-## Development Notes
-
-### Frontend Configuration
-- **Vite Proxy**: Configured to proxy `/api` calls to backend
-- **React Router**: Setup for navigation between components
-- **Auth Context**: Global authentication state management
-- **Error Boundaries**: Graceful error handling
-
-### Backend Configuration
-- **CORS**: Configured for frontend origin
-- **Rate Limiting**: Protection against abuse
-- **Input Validation**: Comprehensive input sanitization
-- **Error Handling**: Structured error responses
+- `/dashboard` is still a placeholder route in the new routed frontend structure
+- Gemini is optional and will fall back gracefully if `geminiApiKey` is missing
+- Some older docs in the repo may still describe previous setup patterns
 
 ## Troubleshooting
 
-### Common Issues
-
-1. **CORS Errors**: Ensure backend CORS is configured for `http://localhost:5173`
-2. **Database Connection**: Verify MongoDB is running and accessible
-3. **Port Conflicts**: Ensure ports 3000 (backend) and 5173 (frontend) are available
-4. **Environment Variables**: Check all required env vars are set
-
-### Debugging
-
-- Backend logs available in terminal
-- Frontend errors in browser dev tools
-- Network requests in browser Network tab
-- API responses in browser console
-
-## Production Deployment
-
-### Backend
-- Set `NODE_ENV=production`
-- Use process manager (PM2)
-- Configure reverse proxy (nginx)
-- Setup SSL certificates
-
-### Frontend
-- Build with `npm run build`
-- Serve static files with web server
-- Update API base URL for production
-- Configure domain and SSL
-
-## Next Steps
-
-1. **Database Migration**: Setup production MongoDB
-2. **Error Monitoring**: Integrate error tracking (Sentry)
-3. **Testing**: Add unit and integration tests
-4. **Documentation**: API documentation with Swagger
-5. **Deployment**: CI/CD pipeline setup
+- If Firebase is skipped on the backend, verify `FIREBASE_SERVICE_ACCOUNT_PATH`
+- If maps fail on the frontend, verify `googleMapsApiKey` in `client-keys.json`
+- If Gemini warns that it is not configured, add `geminiApiKey` to `service-keys.json`
+- If MongoDB fails, verify `MONGODB_URI` and Atlas access settings
+- If Vite cannot find keys, verify `VITE_API_KEYS_FILE_PATH` points to the external folder

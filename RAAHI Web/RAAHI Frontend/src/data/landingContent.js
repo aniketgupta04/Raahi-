@@ -5,6 +5,7 @@ export const heroContent = {
 };
 
 export const navItems = [
+  { label: 'Home', route: '/' },
   { label: 'Workflow', sectionId: 'workflow' },
   { label: 'Features', sectionId: 'features' },
   { label: 'Modules', sectionId: 'modules' },

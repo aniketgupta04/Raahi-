@@ -1,18 +1,37 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Navbar = ({ navItems }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isHomePage = location.pathname === '/';
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
+
+  const displayName = useMemo(() => {
+    if (!user) {
+      return 'Profile';
+    }
+    if (user.fullName) {
+      return user.fullName;
+    }
+    return [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email || 'Profile';
+  }, [user]);
 
   useEffect(() => {
     setIsMenuOpen(false);
+    setShowProfileMenu(false);
   }, [location.pathname]);
 
-  const handleSectionClick = (sectionId) => {
-    if (!sectionId) {
+  const handleNavItemClick = (item) => {
+    if (item.route) {
+      navigate(item.route);
+      return;
+    }
+
+    if (!item.sectionId) {
       return;
     }
 
@@ -20,13 +39,18 @@ const Navbar = ({ navItems }) => {
       navigate('/');
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.getElementById(item.sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
       });
       return;
     }
 
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById(item.sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
 
   return (
@@ -41,7 +65,7 @@ const Navbar = ({ navItems }) => {
             <button
               key={item.label}
               type="button"
-              onClick={() => handleSectionClick(item.sectionId)}
+              onClick={() => handleNavItemClick(item)}
               className="text-base font-semibold tracking-tight text-on-surface-variant transition-colors hover:text-primary"
             >
               {item.label}
@@ -50,18 +74,68 @@ const Navbar = ({ navItems }) => {
         </nav>
 
         <div className="hidden items-center gap-4 md:flex">
-          <Link
-            to="/login"
-            className="px-5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-low"
-          >
-            Login
-          </Link>
-          <Link
-            to="/dashboard"
-            className="bg-error px-5 py-2 text-sm font-bold text-on-error transition-opacity hover:opacity-90"
-          >
-            Emergency Access
-          </Link>
+          {!isLoading && !isAuthenticated && (
+            <>
+              <Link
+                to="/register"
+                className="px-5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-low"
+              >
+                Register
+              </Link>
+              <Link
+                to="/login"
+                className="border border-primary px-5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-on-primary"
+              >
+                Login
+              </Link>
+            </>
+          )}
+
+          {!isLoading && isAuthenticated && (
+            <>
+              <Link
+                to="/dashboard"
+                className="px-5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-low"
+              >
+                Dashboard
+              </Link>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowProfileMenu((current) => !current)}
+                  className="flex items-center gap-3 border border-outline-variant/50 bg-surface-container-low px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-surface-container"
+                >
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-on-primary">
+                    {(displayName[0] || 'P').toUpperCase()}
+                  </span>
+                  <span>{displayName}</span>
+                  <span className="material-symbols-outlined text-base">expand_more</span>
+                </button>
+
+                {showProfileMenu && (
+                  <div className="absolute right-0 top-14 min-w-56 border border-outline-variant/50 bg-surface-container-lowest p-2 shadow-lg">
+                    <div className="border-b border-outline-variant/30 px-3 py-2">
+                      <div className="text-sm font-semibold text-primary">{displayName}</div>
+                      <div className="text-xs text-on-surface-variant">{user?.email}</div>
+                    </div>
+                    <Link
+                      to="/dashboard"
+                      className="mt-2 block px-3 py-2 text-sm text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
+                    >
+                      Open Dashboard
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="block w-full px-3 py-2 text-left text-sm text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         <button
@@ -85,25 +159,52 @@ const Navbar = ({ navItems }) => {
               <button
                 key={item.label}
                 type="button"
-                onClick={() => handleSectionClick(item.sectionId)}
+                onClick={() => handleNavItemClick(item)}
                 className="py-2 text-left text-sm font-medium text-on-surface-variant transition-colors hover:text-primary"
               >
                 {item.label}
               </button>
             ))}
+
             <div className="mt-4 flex flex-col gap-3">
-              <Link
-                to="/login"
-                className="inline-flex items-center justify-center border border-primary px-5 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-on-primary"
-              >
-                Login
-              </Link>
-              <Link
-                to="/dashboard"
-                className="inline-flex items-center justify-center bg-error px-5 py-3 text-sm font-bold text-on-error transition-opacity hover:opacity-90"
-              >
-                Emergency Access
-              </Link>
+              {!isLoading && !isAuthenticated && (
+                <>
+                  <Link
+                    to="/register"
+                    className="inline-flex items-center justify-center px-5 py-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-low"
+                  >
+                    Register
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center justify-center border border-primary px-5 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-on-primary"
+                  >
+                    Login
+                  </Link>
+                </>
+              )}
+
+              {!isLoading && isAuthenticated && (
+                <>
+                  <div className="rounded border border-outline-variant/50 bg-surface-container-low px-4 py-3 text-sm">
+                    <div className="font-semibold text-primary">{displayName}</div>
+                    <div className="text-xs text-on-surface-variant">{user?.email}</div>
+                  </div>
+                  <Link
+                    to="/dashboard"
+                    className="inline-flex items-center justify-center border border-primary px-5 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-on-primary"
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="inline-flex items-center justify-center bg-surface-container px-5 py-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-high"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -171,18 +171,16 @@ const Registration = () => {
       
       if (result.success) {
         setIsSuccessful(true);
-        
-        if (result.requiresVerification) {
-          // Show verification message instead of auto-redirect
-          setErrors({ 
-            success: 'Registration successful! Please check your email for verification link before logging in.' 
-          });
-        } else {
-          // Auto-redirect after success
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 3000);
-        }
+
+        setErrors({
+          success: result.requiresVerification
+            ? 'Registration successful! Please check your email for verification link before logging in.'
+            : 'Registration successful! Redirecting you to login.'
+        });
+
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
       } else {
         setErrors({ submit: result.error || 'Registration failed' });
       }

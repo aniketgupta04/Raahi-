@@ -25,6 +25,7 @@ const LandingPage = () => {
       <HeroSection
         content={heroContent}
         onAccessSystem={() => navigate('/login')}
+        onRegister={() => navigate('/register')}
         onEmergencyAccess={() => navigate('/dashboard')}
         onLearnMore={scrollToWorkflow}
       />

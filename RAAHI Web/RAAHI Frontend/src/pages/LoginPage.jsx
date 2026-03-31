@@ -1,24 +1,58 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { login, isAuthenticated, isLoading } = useAuth();
   const [credentials, setCredentials] = useState({
-    identifier: '',
+    email: '',
     password: '',
   });
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+
+    if (error) {
+      setError('');
+    }
+
     setCredentials((current) => ({
       ...current,
       [name]: value,
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    navigate('/dashboard');
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      const result = await login({
+        email: credentials.email,
+        password: credentials.password,
+      });
+
+      if (result.success) {
+        navigate('/dashboard', { replace: true });
+        return;
+      }
+
+      setError(result.error || 'Login failed. Please check your credentials.');
+    } catch (submitError) {
+      setError('Unable to connect to the login service right now.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -39,34 +73,42 @@ const LoginPage = () => {
           <div className="mb-6 flex items-center gap-3 rounded bg-surface-container-high px-4 py-3">
             <span className="material-symbols-outlined text-sm text-on-surface-variant">gpp_maybe</span>
             <p className="text-sm font-medium tracking-wide text-on-surface-variant">
-              System Security: This is a secure government portal. All access is monitored.
+              System Security: This is a secure Raahi portal. All access is monitored.
             </p>
           </div>
 
           <div className="rounded-lg bg-surface-container-lowest p-8 shadow-sm md:p-10">
             <div className="mb-8">
-              <h1 className="font-headline text-2xl font-bold tracking-tight text-primary">Portal Login</h1>
+              <h1 className="font-headline text-2xl font-bold tracking-tight text-primary">Login</h1>
               <p className="mt-2 text-sm tracking-normal text-on-surface-variant">
-                Enter your credentials to access the Emergency Monitoring System.
+                Enter your email and password to access your Raahi dashboard.
               </p>
             </div>
+
+            {error && (
+              <div className="mb-6 rounded border border-error/20 bg-error-container px-4 py-3 text-sm text-on-error-container">
+                {error}
+              </div>
+            )}
 
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <label
-                  htmlFor="identifier"
+                  htmlFor="email"
                   className="block text-xs font-bold uppercase tracking-[0.24em] text-on-surface-variant"
                 >
-                  Official ID / Email
+                  Email
                 </label>
                 <input
-                  id="identifier"
-                  name="identifier"
-                  type="text"
+                  id="email"
+                  name="email"
+                  type="email"
                   required
-                  value={credentials.identifier}
+                  value={credentials.email}
                   onChange={handleChange}
-                  placeholder="e.g. OFFICER_7721 or name@gov.in"
+                  placeholder="name@example.com"
+                  autoComplete="email"
+                  disabled={isSubmitting || isLoading}
                   className="w-full rounded bg-surface-container-low px-4 py-3 text-on-background placeholder:text-outline-variant focus:border-transparent focus:ring-2 focus:ring-primary"
                 />
               </div>
@@ -90,6 +132,8 @@ const LoginPage = () => {
                   required
                   value={credentials.password}
                   onChange={handleChange}
+                  autoComplete="current-password"
+                  disabled={isSubmitting || isLoading}
                   className="w-full rounded bg-surface-container-low px-4 py-3 text-on-background focus:border-transparent focus:ring-2 focus:ring-primary"
                 />
               </div>
@@ -97,9 +141,10 @@ const LoginPage = () => {
               <div className="space-y-4 pt-2">
                 <button
                   type="submit"
+                  disabled={isSubmitting || isLoading}
                   className="group flex w-full items-center justify-center gap-2 rounded-md bg-primary-container py-4 font-bold text-on-primary transition-colors hover:bg-primary"
                 >
-                  <span>Login to Dashboard</span>
+                  <span>{isSubmitting || isLoading ? 'Signing In...' : 'Login to Dashboard'}</span>
                   <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">
                     arrow_forward
                   </span>
@@ -111,7 +156,7 @@ const LoginPage = () => {
                   </div>
                   <div className="relative flex justify-center">
                     <span className="bg-surface-container-lowest px-2 text-[10px] font-bold uppercase tracking-[0.24em] text-outline">
-                      Distress Protocols
+                      Quick Access
                     </span>
                   </div>
                 </div>
@@ -121,7 +166,7 @@ const LoginPage = () => {
                   className="flex w-full items-center justify-center gap-2 rounded border border-transparent py-3 font-bold text-error transition-all hover:border-error-container hover:bg-error-container/10"
                 >
                   <span className="material-symbols-outlined text-lg">emergency</span>
-                  <span>Emergency Access</span>
+                  <span>SOS Access</span>
                 </Link>
               </div>
             </form>
@@ -129,7 +174,7 @@ const LoginPage = () => {
 
           <div className="mt-8 flex flex-col items-center gap-2">
             <p className="text-center text-[11px] font-medium uppercase tracking-tight text-outline">
-              Digital Authority • Government-Grade Safety Protocol • 2024
+              Raahi Safety System - Secure Access - 2024
             </p>
             <div className="flex gap-4">
               <a href="#" className="text-[11px] text-outline transition-colors hover:text-primary">
@@ -146,9 +191,9 @@ const LoginPage = () => {
       <footer className="mt-auto w-full border-t border-outline-variant/20 bg-surface-container-low">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-8 py-12 md:flex-row">
           <div className="flex flex-col gap-1">
-            <span className="font-headline font-bold tracking-tight text-primary">Tourist Safety</span>
+            <span className="font-headline font-bold tracking-tight text-primary">Raahi Safety</span>
             <p className="text-sm tracking-wide text-on-surface-variant">
-              © 2024 Digital Authority. Government-Grade Safety Protocol.
+              Copyright 2024 Raahi Safety System. Smart tourist safety platform.
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-6">

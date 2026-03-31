@@ -30,7 +30,7 @@ const Dashboard = () => {
     }
 
     if (!isAuthenticated) {
-      navigate('/login.html');
+      navigate('/login');
       return;
     }
     loadDashboardData();
@@ -102,7 +102,7 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login.html');
+    navigate('/login');
   };
 
   const handleLocationUpdate = (locationData) => {
